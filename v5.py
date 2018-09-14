@@ -34,7 +34,10 @@ class Rede(nn.Module):
 train=data_csv[:-5000]
 teste=data_csv[-5000:]
 pm25=train['pm25']
+pm25=np.roll(pm25,-1)
+pm25[-1]=pm25[-2]
 
+	
 #Tirar o pm25 do treino/teste
 train=train.drop(columns=['pm25'])
 teste=teste.drop(columns=['pm25'])
@@ -42,7 +45,7 @@ teste=teste.drop(columns=['pm25'])
 #DataFrame para Tensor
 train=torch.tensor(train.values)
 teste=torch.tensor(teste.values)
-pm25=torch.tensor(pm25.values)
+pm25=torch.tensor(pm25)
 pm25=pm25.resize(130099,1)
 pm25=pm25.float()
 

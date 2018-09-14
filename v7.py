@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import sklearn
 from  sklearn.metrics import mean_squared_error
 
-data_csv = pd.read_csv('../../Downloads/gams.txt',header=0, usecols=[3])
+data_csv = pd.read_csv('../../Downloads/gams.txt',header=0, usecols=[4])
 #data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 
 #plt.plot(data_csv)
@@ -24,7 +24,7 @@ data_csv = pd.read_csv('../../Downloads/gams.txt',header=0, usecols=[3])
 #print data_csv
 
 train=data_csv[:-5000]
-teste=data_csv[-5000:-4980]
+teste=data_csv[-5000:-4950]
 history=[x for x in train.values]
 #pint(model_fit.summary())
 predictions=list()
@@ -37,8 +37,10 @@ for i in range(len(teste)):
 	obs=teste.values[i]
 	history.append(obs)
 	print('predicted=%f, expected=%f' % (yhat, obs))
+	plt.plot(i,yhat, 'ro')
+	plt.plot(i,obs,'bo')
 
-
+plt.show()
 error = mean_squared_error(teste.values, predictions)
 print('Test MSE: %.3f' % error)
 

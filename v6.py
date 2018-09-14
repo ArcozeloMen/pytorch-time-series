@@ -34,6 +34,8 @@ class Rede(nn.Module):
 train=data_csv[:-5000]
 teste=data_csv[-5000:]
 pm25=train['pm25']
+pm25=np.roll(pm25,-1)
+pm25[-1]=pm25[-2]
 
 #Tirar o pm25 do treino/teste
 train=train.drop(columns=['pm25'])
@@ -42,7 +44,7 @@ teste=teste.drop(columns=['pm25'])
 #DataFrame para Tensor
 train=torch.tensor(train.values)
 teste=torch.tensor(teste.values)
-pm25=torch.tensor(pm25.values)
+pm25=torch.tensor(pm25)
 pm25=pm25.resize(130099,1)
 pm25=pm25.float()
 
@@ -68,7 +70,7 @@ optimizer = optim.SGD(_rede.parameters(), lr=0.01)
 perda= nn.MSELoss()
 
 	
-for i in range (5):
+for i in range (15):
 	output=_rede(n_train.float())
 	#output=np.asarray(output)
 	#output=torch.from_numpy(output)
@@ -85,10 +87,10 @@ for i in range (5):
 	#output=output.view(130099,1)
 	#output=output.reshape_as(target)
 	
-	print output.size()
+	#print output.size()
 	#output=torch.unsqueeze(output,1)
 	#output=output.reshape(130099,1)
-	print output.shape
+	#print output.shape
 	erro=perda(output,target)
 	optimizer.zero_grad()
 	erro.backward()
