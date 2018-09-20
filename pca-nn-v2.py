@@ -1,5 +1,9 @@
-# PCA-NN 
-# Normalizaçao - 
+# PCA-NN-v2.py 
+# - RNN -
+# - PCA 
+# - Estandardizado 
+# - Normalizado
+# - 1 input
 
 import torch
 from torch.autograd import Variable
@@ -73,7 +77,7 @@ print (reducao.size())
 
 
 #normalizacao
-#n_train=nn.functional.normalize(train)
+reducao=nn.functional.normalize(reducao)
 #n_teste=nn.functional.normalize(teste)
 #pm25=nn.functional.normalize(pm25)
 
@@ -88,7 +92,7 @@ optimizer = optim.SGD(_rede.parameters(), lr=0.01)
 perda= nn.MSELoss()
 target=np.roll(reducao,-1)
 target=torch.from_numpy(target)
-for i in range (15):
+for i in range (50):
 	output =_rede(reducao.float())
 	#output=np.asarray(output)
 	#output=torch.from_numpy(output)

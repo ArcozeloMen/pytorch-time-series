@@ -7,12 +7,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("always")
-data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[2,3,4,5,6])
-data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
+data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[1,2,3,4,5,6])
+#data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 
 plt.plot(data_csv)
 
-plt.legend(('humidity','pm10','temperature','voc','pm25'),loc='upper right')
+plt.legend(('co2','humidity','pm10','pm25','temp','voc'),loc='upper right')
 plt.show()
 
 print data_csv.corr()
@@ -53,7 +53,7 @@ n_teste=nn.functional.normalize(teste)
 
 #	TREINO
 print '###	TREINO	###'
-for i in range (500):
+for i in range (10):
 	_rede=\
 	Rede()
 	output=_rede(n_train.float())

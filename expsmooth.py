@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from scipy.signal import savgol_filter
 
-data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[4])
+data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[6])
 #pm=pd.read_csv('../../Downloads/gams.txt', usecols=[3,6])
 #data_csv = StandardScaler().fit_transform(data_csv)
 
@@ -26,7 +26,7 @@ plt.show()
 data_csv=data_csv.values
 data_csv=data_csv.flatten()
 #print (data_csv.shape())
-y=savgol_filter(data_csv[:-10000],5,2)
+y=savgol_filter(data_csv,101,1)
 plt.plot(y)
 plt.show()
 

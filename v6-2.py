@@ -1,4 +1,4 @@
-# v5 - RNN 
+# v6 - LSTM 
 # - normalizado
 # - com conjunto de validação
 
@@ -22,15 +22,15 @@ data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 class Rede(nn.Module):
     def __init__(self):
         super(Rede,self).__init__()
-        self.camada1=nn.RNN(4,1,1)
-        #self.camada2=nn.LSTM(10,1)
+        self.camada1=nn.LSTM(4,1)
+        self.camada2=nn.LSTM(1,1)
 
 		
 
     def forward(self, x):
-        x=self.camada1(x)
-        #x=self.camada2(x)
-        return x
+        out,x=self.camada1(x)
+        out,x=self.camada2(out)
+        return out
 
 #Divide entre teste e treino
 train=data_csv[:-5000]
@@ -39,7 +39,6 @@ pm25=train['pm25']
 pm25=np.roll(pm25,-1)
 pm25[-1]=pm25[-2]
 
-	
 #Tirar o pm25 do treino/teste
 train=train.drop(columns=['pm25'])
 teste=teste.drop(columns=['pm25'])
@@ -59,12 +58,10 @@ teste.unsqueeze_(-1)
 teste=teste.transpose(2,1)
 teste=teste.expand(950,1,4)
 
-
-
 #normalizacao
 n_train=nn.functional.normalize(train)
 n_teste=nn.functional.normalize(teste)
-pm25=nn.functional.normalize(pm25)
+target=nn.functional.normalize(pm25)
 
 #n_train.resize(130099,4)
 #print n_train
@@ -75,8 +72,10 @@ print ('###	  TREINO  	###')
 _rede=Rede()
 optimizer = optim.SGD(_rede.parameters(), lr=0.01)
 perda= nn.MSELoss()
-for i in range (25):
-	output, coiso=_rede(n_train.float())
+
+	
+for i in range (1):
+	output=_rede(n_train.float())
 	#output=np.asarray(output)
 	#output=torch.from_numpy(output)
 	#output=torch.Tensor(output(dtype='float'))
@@ -84,11 +83,19 @@ for i in range (25):
 	#output=list(output)
 	#output=np.asarray(output)
 	
+	#print output.size()	
 	#target=Variable(pm25)
+	#output=output.permute(0,2,1)
+	#print output.view(seq_len, batch, num_directions, hidden_size)
 	output=torch.squeeze(output,2)
-	output=output.reshape(130099,1)
-	target=pm25	
+	#output=output.view(130099,1)
+	#output=output.reshape_as(target)
+	
+	#print output.size()
+	#output=torch.unsqueeze(output,1)
+	#output=output.reshape(130099,1)
 	print output.shape
+
 	erro=perda(output,target)
 	optimizer.zero_grad()
 	erro.backward()
@@ -100,23 +107,24 @@ for i in range (25):
 	plt.plot(i,float(error[0]),'bo')
 	#print output
 plt.show()
+
 pm25=data_csv['pm25']
 pm25=pm25[-5000:-4050]
 pm25=np.roll(pm25,-1)
 pm25=torch.tensor(pm25)
-pm25=pm25.resize(950,1)
+pm25=pm25.resize(950,1,1)
 pm25=nn.functional.normalize(pm25)
-output,coiso=_rede(n_teste.float())
+
+output=_rede(n_teste.float())
 target=Variable(pm25)
-output=torch.squeeze(output,2)
-output=output.reshape(950,1)
 erro=perda(output,target.float())
 optimizer.zero_grad()
 erro.backward()
 optimizer.step()
-error = str(erro)
+error=str(erro)
 error=error.split('(')
 error=error[1].split(',')
 print error[0]
 plt.plot(1,float(error[0]),'bo')
-plt.show()      
+plt.show()
+

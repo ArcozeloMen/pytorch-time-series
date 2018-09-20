@@ -1,5 +1,4 @@
-# v7 - ARIMA 
-#https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/
+# PCA-ARIMA 
 
 import torch
 from torch.autograd import Variable
@@ -13,8 +12,10 @@ from statsmodels.tsa.arima_model import ARIMA
 import matplotlib.pyplot as plt
 import sklearn
 from  sklearn.metrics import mean_squared_error
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
-data_csv = pd.read_csv('../../Downloads/gams.txt',header=0, usecols=[4])
+data_csv = pd.read_csv('../../Downloads/gams.txt',header=0, usecols=[1,2,3,4,5,6])
 #data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 
 #plt.plot(data_csv)
@@ -22,26 +23,34 @@ data_csv = pd.read_csv('../../Downloads/gams.txt',header=0, usecols=[4])
 #plt.show()
 
 #print data_csv
+data_csv = StandardScaler().fit_transform(data_csv)
+#PM
+#data_csv = np.delete(data_csv,[0,1,2,5,6],1)
+
+#Temp-CO2
+data_csv=np.delete(data_csv,[0,2,3,4,6],1)
+fun_pca=PCA(n_components=1)
+data_csv=fun_pca.fit_transform(data_csv)
 
 train=data_csv[:-5000]
 teste=data_csv[-5000:-4950]
-history=[x for x in train.values]
+history=[x for x in train]
 #pint(model_fit.summary())
 predictions=list()
 for i in range(len(teste)):
-	model = ARIMA(history, order=(5,1,0))
+	model = ARIMA(history, order=(5,1,1))
 	model_fit = model.fit(disp=0)
 	output=model_fit.forecast()
 	yhat=output[0]
 	predictions.append(yhat)
-	obs=teste.values[i]
+	obs=teste[i]
 	history.append(obs)
 	print('predicted=%f, expected=%f' % (yhat, obs))
 	plt.plot(i,yhat, 'ro')
 	plt.plot(i,obs,'bo')
 
 plt.show()
-error = mean_squared_error(teste.values, predictions)
+error = mean_squared_error(teste, predictions)
 print('Test MSE: %.3f' % error)
 
 #residuals = DataFrame(model_fit.resid)

@@ -1,5 +1,6 @@
 # v4 - versao supervisionada com shift no target
-
+# - normalizado
+# - com conjunto de validaçao
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
@@ -10,8 +11,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("always")
-data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[2,3,4,5,6])
-data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
+data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[1,2,3,4,5,6])
+#data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 
 #plt.plot(data_csv)
 #plt.legend(('humidity','pm10','temperature','voc','pm25'),loc='upper right')
@@ -20,7 +21,7 @@ data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 class Rede(nn.Module):
     def __init__(self):
         super(Rede,self).__init__()
-        self.camada1=nn.Linear(4,10)
+        self.camada1=nn.Linear(5,10)
         self.camada2=nn.Linear(10,1)
 
     def forward(self, x):
@@ -30,10 +31,9 @@ class Rede(nn.Module):
 
 #Divide entre teste e treino
 train=data_csv[:-5000]
-teste=data_csv[-5000:]
+teste=data_csv[-5000:-4050]
 pm25=train['pm25']
-pm25=np.roll(pm25,1)
-pm25[0]=pm25[1]
+pm25=np.roll(pm25,-1)
 
 print pm25.shape
 
@@ -61,10 +61,10 @@ print '###	TREINO	###'
 _rede=Rede()
 optimizer = optim.SGD(_rede.parameters(), lr=0.01)
 perda= nn.MSELoss()
-for i in range (15):
+for i in range (50):
 	output=_rede(n_train.float())
 	target=Variable(pm25)	
-	print output.shape
+#	print output.shape
 	erro=perda(output,target)
 	optimizer.zero_grad()
 	erro.backward()
@@ -75,4 +75,23 @@ for i in range (15):
 	print error[0]
 	plt.plot(i,float(error[0]),'bo')
 	#print output
+plt.show()
+
+pm25=data_csv['pm25']
+pm25=pm25[-5000:-4050]
+pm25=np.roll(pm25,-1)
+pm25=torch.tensor(pm25)
+pm25=pm25.resize(950,1)
+pm25=nn.functional.normalize(pm25)
+output=_rede(n_teste.float())
+target=Variable(pm25)
+erro=perda(output,target.float())
+optimizer.zero_grad()
+erro.backward()
+optimizer.step()
+error = str(erro)
+error=error.split('(')
+error=error[1].split(',')
+print error[0]
+plt.plot(i,float(error[0]),'bo')
 plt.show()

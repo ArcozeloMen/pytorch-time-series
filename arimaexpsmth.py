@@ -28,12 +28,12 @@ history=[x for x in train.values]
 train=train.values
 
 train=train.flatten()
-train= savgol_filter(train,5,2)
+train= savgol_filter(train,101,1)
 teste=data_csv[-5000:-4950]
 #pint(model_fit.summary())
 predictions=list()
 for i in range(len(teste)):
-	model = ARIMA(train, order=(5,2,1))
+	model = ARIMA(train, order=(5,1,0))
 	model_fit = model.fit(disp=0)
 	output=model_fit.forecast()
 	yhat=output[0]

@@ -29,7 +29,7 @@ history=[x for x in train.values]
 #pint(model_fit.summary())
 predictions=list()
 for i in range(len(teste)):
-	model = ARIMA(history, order=(15,2,1))
+	model = ARIMA(history, order=(1,1,1))
 	model_fit = model.fit(disp=0)
 	output=model_fit.forecast()
 	yhat=output[0]
