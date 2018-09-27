@@ -29,8 +29,8 @@ data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[1,2,3,4,5,6])
 class Rede(nn.Module):
     def __init__(self):
         super(Rede,self).__init__()
-        self.camada1=nn.Linear(4,20)
-        self.camada2=nn.Linear(20,1)
+        self.camada1=nn.Linear(5,10)
+        self.camada2=nn.Linear(10,1)
 
 		
 
@@ -39,20 +39,20 @@ class Rede(nn.Module):
         x=self.camada2(x)
         return x
 
-#Estandardizaçao e PCAi
+#Estandardizacao e PCA
 data_csv = StandardScaler().fit_transform(data_csv)
 
 pm_target=np.delete(data_csv,[0,1,2,4,5],1)
 pm_target=pm_target[:-5000]
 pm = np.delete(data_csv,[0,1,2,5,6],1)
-tco2=np.delete(data_csv,[0,2,3,4,6],1)
+#tco2=np.delete(data_csv,[0,2,3,4,6],1)
 fun_pca=PCA(n_components=1)
 pm=fun_pca.fit_transform(pm)
-tco2=fun_pca.fit_transform(tco2)
+#tco2=fun_pca.fit_transform(tco2)
 
-#Concatnação de arrays
-data_csv=np.delete(data_csv,[1,3,4,5],1)
-data_csv=np.concatenate((data_csv,pm,tco2),axis=1)
+#Concatnacao de arrays
+data_csv=np.delete(data_csv,[3,4],1)
+data_csv=np.concatenate((data_csv,pm),axis=1)
 
 data_csv=torch.from_numpy(data_csv)
 
@@ -60,7 +60,8 @@ print (data_csv.size())
 
 #Divide entre teste e treino
 train=data_csv[:-5000]
-teste=data_csv[-5000:-4900]
+train=nn.functional.normalize(train)
+teste=data_csv[-5000:-4050]
 
 
 #pm25=train['pm25']
@@ -98,6 +99,7 @@ optimizer = optim.SGD(_rede.parameters(), lr=0.01)
 perda= nn.MSELoss()
 target=np.roll(pm_target,-1)
 target=torch.from_numpy(target)
+target=nn.functional.normalize(target)
 for i in range (50):
 	output=_rede(train.float())
 	#output=np.asarray(output)

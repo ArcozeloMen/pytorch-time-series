@@ -1,6 +1,8 @@
-# v4 - versao supervisionada com shift no target
+# v4 - versao supervisionada 
+# - com shift no target
 # - normalizado
-# - com conjunto de validaçao
+# - com conjunto de validacao
+
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
@@ -25,21 +27,21 @@ class Rede(nn.Module):
         self.camada2=nn.Linear(10,1)
 
     def forward(self, x):
-        x=F.relu(self.camada1(x))
-        x=F.relu(self.camada2(x))
+        x=torch.tanh(self.camada1(x))
+        x=torch.tanh(self.camada2(x))
         return x
 
 #Divide entre teste e treino
 train=data_csv[:-5000]
-teste=data_csv[-5000:-4050]
-pm25=train['pm25']
+teste=data_csv[-5000:-2000]
+pm25=train['voc']
 pm25=np.roll(pm25,-1)
 
-print pm25.shape
+#print pm25.shape
 
 #Tirar o pm25 do treino/teste
-train=train.drop(columns=['pm25'])
-teste=teste.drop(columns=['pm25'])
+train=train.drop(columns=['voc'])
+teste=teste.drop(columns=['voc'])
 
 #DataFrame para Tensor
 train=torch.tensor(train.values)
@@ -59,7 +61,7 @@ pm25=nn.functional.normalize(pm25)
 #	TREINO
 print '###	TREINO	###'
 _rede=Rede()
-optimizer = optim.SGD(_rede.parameters(), lr=0.01)
+optimizer = optim.SGD(_rede.parameters(), lr=0.1)
 perda= nn.MSELoss()
 for i in range (50):
 	output=_rede(n_train.float())
@@ -77,18 +79,19 @@ for i in range (50):
 	#print output
 plt.show()
 
-pm25=data_csv['pm25']
-pm25=pm25[-5000:-4050]
+pm25=data_csv['voc']
+pm25=pm25[-5000:-2000]
 pm25=np.roll(pm25,-1)
 pm25=torch.tensor(pm25)
-pm25=pm25.resize(950,1)
+pm25=pm25.resize(3000,1)
 pm25=nn.functional.normalize(pm25)
-output=_rede(n_teste.float())
+
+olha=torch.zeros([3000,5],dtype=torch.float)
+olha.random_(-2,2)
+
+output=_rede(olha)
 target=Variable(pm25)
 erro=perda(output,target.float())
-optimizer.zero_grad()
-erro.backward()
-optimizer.step()
 error = str(erro)
 error=error.split('(')
 error=error[1].split(',')

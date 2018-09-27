@@ -1,6 +1,5 @@
 # PCA2-NN.py 
 
-# WIP
 
 import torch
 from torch.autograd import Variable
@@ -16,7 +15,6 @@ from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings("always")
 data_csv = pd.read_csv('../../Downloads/gams.txt', usecols=[1,2,3,4,5,6])
-data_csv= data_csv[['humidity','pm10','temperature','voc','pm25']]
 
 #plt.plot(data_csv)
 #plt.legend(('co2','humidity','pm10','temperature','voc','pm25'),loc='upper right')
@@ -42,6 +40,13 @@ teste=data_csv[-5000:]
 
 #Estandardizaçao
 train = StandardScaler().fit_transform(train)
+
+#PM25 para testar em vez do PCA como output
+pm25=np.delete(train,[0,1,2,4,5,6],1)
+pm25=np.roll(pm25,-1)
+pm25=torch.tensor(pm25)
+pm25=pm25.resize(130099,1)
+pm25=nn.functional.normalize(pm25)
 
 #PCA
 reducao=np.delete(train,[0,1,4,5],1)
@@ -88,8 +93,13 @@ optimizer = optim.SGD(_rede.parameters(), lr=0.01)
 perda= nn.MSELoss()
 target=np.roll(reducao,-1)
 target=torch.from_numpy(target)
+target=nn.functional.normalize(target)
+
+olha=torch.zeros([130099,1],dtype=torch.float)
+olha.random_(-2,2)
+
 for i in range (50):
-	output=_rede(reducao.float())
+	output=_rede(olha)
 	#output=np.asarray(output)
 	#output=torch.from_numpy(output)
 	#output=torch.Tensor(output(dtype='float'))
@@ -101,7 +111,7 @@ for i in range (50):
 	#output=output.reshape(130099,1)
 	#target=pm25	
 	#print output.shape
-	erro=perda(output,target.float())
+	erro=perda(output,pm25.float())
 	optimizer.zero_grad()
 	erro.backward()
 	optimizer.step()
